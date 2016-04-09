@@ -1,6 +1,8 @@
 # tp-js-esgi-carousel
 TP Javascript : Carousel
 
+Live example : http://paw.xorus.fr/tpjs/carousel.html
+
 This project uses bower dependencies, please install bower first then run "bower install".
 
 ## Features
