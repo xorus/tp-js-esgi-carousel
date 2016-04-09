@@ -1,0 +1,24 @@
+[
+  {
+    "img": "img/1.jpg",
+    "title": "Tigre de sumatra"
+  },
+  {
+    "img": "img/2.jpg",
+    "title": "Tigre Blanc Royal",
+    "description": "Leur pelage blanc est dû à une anomalie génétique appellée leucistisme.<br>Le tigre blanc est une espèce à part entière."
+  },
+  {
+    "img": "img/3.jpg",
+    "title": "Tigre de sibérie"
+  },
+  {
+    "img": "img/4.jpg",
+    "title": "Tigre de Chine méridionale",
+    "description": "Il vient de chine"
+  },
+  {
+    "img": "img/5.jpg",
+    "description": "Ça fait beaucoup de félins tout ça."
+  }
+]
