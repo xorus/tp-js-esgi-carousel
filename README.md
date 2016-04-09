@@ -14,7 +14,8 @@ This project uses bower dependencies, please install bower first then run "bower
 * Uses Litteral objects for the slides
 * Navigation dots
 * Image cropping
-* Responsive (3 breakpoiunts : < 640px, > 1200px, between the two)
+* Responsive (3 breakpoints : < 640px, > 1200px, between the two)
 * Animations
 * Slides loaded via
 * Fullscreen toggle
+* Horizontal or vertical slideshow

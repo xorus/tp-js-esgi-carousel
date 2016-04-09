@@ -9,7 +9,8 @@ var sliderConfig = {
     animationDuration: 400,
     autoplay: true,
     delay: 4000,
-    fullscreen: false
+    fullscreen: false,
+    vertical: false
 };
 
 // play/pause icons
@@ -44,14 +45,19 @@ function sliderNext(count) {
     if (typeof count === "undefined") {
         count = 1;
     }
+
+    var marginProperty = (sliderConfig.vertical) ? 'margin-top' : 'margin-left';
+    var animateTo = {};
+    animateTo[marginProperty] = ((sliderConfig.vertical) ? -sliderHeight : -sliderWidth) * count;
+
     sliderAnimating = true;
     sliderSlideContainer.find('.shown').removeClass('shown');
-    sliderSlideContainer.animate({"margin-left": -sliderWidth * count}, sliderConfig.animationDuration, "swing", function () {
+    sliderSlideContainer.animate(animateTo, sliderConfig.animationDuration, "swing", function () {
         sliderAnimating = false;
         for (var i = 0; i < count; i++) {
             sliderSlideContainer.find(".element:last").after(sliderSlideContainer.find(".element:first"));
         }
-        sliderSlideContainer.css({"margin-left": 0});
+        sliderSlideContainer.css(marginProperty, 0);
         sliderSlideContainer.find(".element:first").addClass('shown');
         sliderCurrentSlide += count;
         if (sliderCurrentSlide >= sliderLength) {
@@ -76,16 +82,21 @@ function sliderPrev(count) {
         count = 1;
     }
 
+    var marginProperty = (sliderConfig.vertical) ? 'margin-top' : 'margin-left';
+    var animateTo = {};
+    animateTo[marginProperty] = 0;
+
     sliderAnimating = true;
     // insert the list slide at the begining
     sliderSlideContainer.find('.shown').removeClass('shown');
     for (var i = 0; i < count; i++) {
         sliderSlideContainer.find(".element:first").before(sliderSlideContainer.find(".element:last"));
     }
-    sliderSlideContainer.css({"margin-left": -sliderWidth * count});
-    sliderSlideContainer.animate({"margin-left": 0}, sliderConfig.animationDuration, "swing", function () {
+    var initialMargin = ((sliderConfig.vertical) ? -sliderHeight : -sliderWidth) * count;
+    sliderSlideContainer.css(marginProperty, initialMargin);
+    sliderSlideContainer.animate(animateTo, sliderConfig.animationDuration, "swing", function () {
         sliderAnimating = false;
-        sliderSlideContainer.css({"margin-left": 0});
+        sliderSlideContainer.css(marginProperty, 0);
         sliderSlideContainer.find(".element:first").addClass('shown');
         sliderCurrentSlide -= count;
         if (sliderCurrentSlide < 0) {
@@ -204,9 +215,15 @@ function recomputeSliderWidth() {
         width: sliderWidth,
         height: sliderHeight
     });
-    // +1 to add a safe margin (because of whitespace)
-    sliderSlideContainer.width(sliderWidth * ($("#slide .element").length + 1));
-
+    // length + 1 to add a safe margin (because of whitespace)
+    if (sliderConfig.vertical) {
+        sliderSlideContainer.width(sliderWidth);
+        sliderSlideContainer.height(sliderHeight * (sliderSlideContainer.find(".element").length + 1));
+    } else {
+        sliderSlideContainer.css({height: ''}); // reset eventual custom height
+        sliderSlideContainer.width(sliderWidth * (sliderSlideContainer.find(".element").length + 1));
+    }
+    // recheck the size of every image in the slider
     sliderSlideContainer.find('.image > img').each(function () {
         imgAutoSize(this);
     });
@@ -356,6 +373,7 @@ function sliderInit() {
         sliderNavigation.append(
             $('<a href="#">').text(i + 1).data('slide', i).click(function () {
                 sliderGoto($(this).data('slide'));
+                return false;
             })
         );
     }
@@ -409,11 +427,10 @@ $(document).ready(function () {
             action: 'config'
         }
     }).success(function (data) {
-        sliderConfig = $.merge(data, sliderConfig);
-
+        $.extend(sliderConfig, data);
         confLoaded = true;
         loadCallback();
-    }).error(function (error) {
+    }).error(function () {
         // if there was a problem with the config, that's not a big issue, we'll just use the default configuration
         console.error('slider: Couldn\'t load slider configuration from server (or received invalid data), ' +
             'using default configuration');
