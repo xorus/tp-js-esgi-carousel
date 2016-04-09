@@ -399,6 +399,11 @@ function sliderInit() {
 $(document).ready(function () {
     var confLoaded = false;
     var slidesLoaded = false;
+    var loadCallback = function () {
+        if (confLoaded && slidesLoaded) {
+            sliderInit();
+        }
+    };
     $.ajax(apiUrl, {
         data: {
             action: 'config'
@@ -407,9 +412,13 @@ $(document).ready(function () {
         sliderConfig = $.merge(data, sliderConfig);
 
         confLoaded = true;
-        if (confLoaded && slidesLoaded) {
-            sliderInit();
-        }
+        loadCallback();
+    }).error(function (error) {
+        // if there was a problem with the config, that's not a big issue, we'll just use the default configuration
+        console.error('slider: Couldn\'t load slider configuration from server (or received invalid data), ' +
+            'using default configuration');
+        confLoaded = true;
+        loadCallback();
     });
     $.ajax(apiUrl, {
         data: {
@@ -418,8 +427,9 @@ $(document).ready(function () {
     }).success(function (data) {
         slides = data;
         slidesLoaded = true;
-        if (confLoaded && slidesLoaded) {
-            sliderInit();
-        }
+        loadCallback();
+    }).error(function () {
+        // if we couldn't load the slides, well...
+        console.error('slider: Couldn\' load slides data (or received invalid data). Aborting.');
     });
 });
