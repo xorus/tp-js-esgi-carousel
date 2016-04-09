@@ -1,5 +1,5 @@
 <?php
-define('USE_DATABASE', false);
+define('USE_DATABASE', true);
 
 if (USE_DATABASE) {
     try {
