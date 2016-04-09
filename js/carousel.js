@@ -25,13 +25,15 @@ var sliderWidth = 0;
 var sliderHeight = 0;
 var sliderInterval = null;
 var sliderAnimating = false;
+var sliderCurrentSlide = 0;
 var sliderContainer; // global container (#slideshow)
 var sliderSlideContainer; // slide container (#slide)
+
+// dom elements
 var sliderFullscreenBtn;
 var sliderToggleBtn;
 var sliderLength;
 var sliderNavigation;
-var sliderCurrentSlide = 0;
 
 /**
  * Go forwards one (or "count" number) slide
@@ -40,12 +42,14 @@ var sliderCurrentSlide = 0;
  */
 function sliderNext(count) {
     if (sliderAnimating) {
+        // prevent button mashing bad effects
         return false;
     }
     if (typeof count === "undefined") {
         count = 1;
     }
 
+    // if this is a vertical slider, we animate the margin top and use sliderHeight
     var marginProperty = (sliderConfig.vertical) ? 'margin-top' : 'margin-left';
     var animateTo = {};
     animateTo[marginProperty] = ((sliderConfig.vertical) ? -sliderHeight : -sliderWidth) * count;
@@ -63,7 +67,7 @@ function sliderNext(count) {
         if (sliderCurrentSlide >= sliderLength) {
             sliderCurrentSlide = 0;
         }
-        updateNav();
+        sliderUpdateNav();
     });
     sliderResetInterval();
     return false;
@@ -82,6 +86,7 @@ function sliderPrev(count) {
         count = 1;
     }
 
+    // if this is a vertical slider, we animate the margin top
     var marginProperty = (sliderConfig.vertical) ? 'margin-top' : 'margin-left';
     var animateTo = {};
     animateTo[marginProperty] = 0;
@@ -92,6 +97,7 @@ function sliderPrev(count) {
     for (var i = 0; i < count; i++) {
         sliderSlideContainer.find(".element:first").before(sliderSlideContainer.find(".element:last"));
     }
+    // use sliderHeight insteaf of width if the slider is vertical
     var initialMargin = ((sliderConfig.vertical) ? -sliderHeight : -sliderWidth) * count;
     sliderSlideContainer.css(marginProperty, initialMargin);
     sliderSlideContainer.animate(animateTo, sliderConfig.animationDuration, "swing", function () {
@@ -102,7 +108,7 @@ function sliderPrev(count) {
         if (sliderCurrentSlide < 0) {
             sliderCurrentSlide = sliderLength - 1;
         }
-        updateNav();
+        sliderUpdateNav();
     });
     sliderResetInterval();
     return false;
@@ -115,6 +121,7 @@ function sliderPrev(count) {
  */
 function sliderGoto(index) {
     if (sliderAnimating || index == sliderCurrentSlide) {
+        // do not move if the user is mashing the button of if we are already on the right slide
         return false;
     }
 
@@ -125,8 +132,6 @@ function sliderGoto(index) {
     } else {
         sliderPrev(-distance);
     }
-
-    return false;
 }
 
 /**
@@ -169,7 +174,7 @@ function sliderResetInterval() {
  * Auto resizes the images
  * @param img image dom elment
  */
-function imgAutoSize(img) {
+function sliderImageAutoSize(img) {
     // reset previously defined width / height
     $(img).css('width', '');
     $(img).css('height', '');
@@ -196,7 +201,7 @@ function imgAutoSize(img) {
 /**
  * Updates the navigation bubbles
  */
-function updateNav() {
+function sliderUpdateNav() {
     sliderNavigation.find('.active').removeClass('active');
     sliderNavigation.find('a:eq(' + sliderCurrentSlide + ')').addClass('active');
 }
@@ -204,7 +209,7 @@ function updateNav() {
 /**
  * Recalculates a slide width, useful for responsive
  */
-function recomputeSliderWidth() {
+function sliderRecomputeSize() {
     if (sliderWidth == sliderContainer.width() && sliderHeight == sliderContainer.height()) {
         // slider width/height didn't change
         return;
@@ -225,7 +230,7 @@ function recomputeSliderWidth() {
     }
     // recheck the size of every image in the slider
     sliderSlideContainer.find('.image > img').each(function () {
-        imgAutoSize(this);
+        sliderImageAutoSize(this);
     });
 }
 
@@ -242,7 +247,7 @@ function sliderBuildElement(slide) {
 
     // when images load, we resize them
     img.load(function () {
-        imgAutoSize(this);
+        sliderImageAutoSize(this);
     });
 
     // Title / Description
@@ -266,7 +271,7 @@ function sliderBuildElement(slide) {
  * Applies the fullscreen status based on the sliderConfig.fullscreen var
  * @param animate boolean whether or not we need to do a fadeOut/fadeIn
  */
-function applyFullscreen(animate) {
+function sliderApplyFullscreen(animate) {
     if (typeof animate === "undefined") {
         animate = true;
     }
@@ -285,7 +290,7 @@ function applyFullscreen(animate) {
         sliderContainer.fadeOut(fadeDuration, function () {
             sliderContainer.show().css('opacity', 0);
             toggle(sliderContainer, sliderConfig.fullscreen);
-            recomputeSliderWidth();
+            sliderRecomputeSize();
             sliderContainer.animate({'opacity': 1}, fadeDuration);
         });
 
@@ -296,7 +301,7 @@ function applyFullscreen(animate) {
     } else {
         toggle(sliderNavigation, sliderConfig.fullscreen);
         toggle(sliderContainer, sliderConfig.fullscreen);
-        recomputeSliderWidth();
+        sliderRecomputeSize();
     }
 }
 
@@ -316,7 +321,7 @@ function sliderInit() {
     // fullscreen toggle button
     sliderFullscreenBtn = $('<a href="#" class="fullscreenToggle">').click(function () {
         sliderConfig.fullscreen = !sliderConfig.fullscreen;
-        applyFullscreen(true);
+        sliderApplyFullscreen(true);
         return false;
     }).append('<img src="' + sliderFullscreenIcon + '" alt="Plein écran on/off"/>');
 
@@ -379,19 +384,19 @@ function sliderInit() {
     }
 
     sliderContainer.after(sliderNavigation);
-    updateNav();
+    sliderUpdateNav();
 
     // display the first caption (adding the css class)
     sliderSlideContainer.find('.element:first').addClass('shown');
 
     // fullscreen toggle
-    applyFullscreen(false);
+    sliderApplyFullscreen(false);
 
     // calculate the slider width and register the resize event
-    // recomputeSliderWidth();
-    $(window).resize(recomputeSliderWidth);
+    // sliderRecomputeSize();
+    $(window).resize(sliderRecomputeSize);
 
-    // catch the arrow left & right buttons
+    // catch the arrow left & right buttons (even if we are in vertical mode)
     $(document).keydown(function (e) {
         if (e.which == 37) {
             sliderPrev();
