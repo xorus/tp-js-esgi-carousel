@@ -1,9 +1,12 @@
 <?php
+define('USE_DATABASE', false);
 
-try {
-    $pdo = new PDO('mysql:host=localhost;dbname=test;charset=UTF8', 'root', 'root');
-} catch (Exception $e) {
-    exit('connexion impossible ' . $e->getMessage());
+if (USE_DATABASE) {
+    try {
+        $pdo = new PDO('mysql:host=localhost;dbname=test;charset=UTF8', 'root', 'root');
+    } catch (Exception $e) {
+        exit('connexion impossible ' . $e->getMessage());
+    }
 }
 
 $action = !empty($_GET['action']) ? $_GET['action'] : 'slides';
@@ -12,6 +15,10 @@ header('Content-Type: application/json;charset=utf-8');
 
 switch ($action) {
     case 'slides':
+        if (!USE_DATABASE) {
+            echo file_get_contents('local-slides.json');
+            exit;
+        }
         $query = $pdo->query('SELECT `image`, `title`, `description` FROM slides ORDER BY pos ASC');
         $slides = [];
 
@@ -31,6 +38,9 @@ switch ($action) {
         echo json_encode($slides);
         break;
     case 'config';
+        if (!USE_DATABASE) {
+            exit;
+        }
         $query = $pdo->query('SELECT `key`, `value`, `type` FROM configuration');
         $config = [];
 
