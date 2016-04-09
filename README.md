@@ -3,16 +3,18 @@ TP Javascript : Carousel
 
 This project uses bower dependencies, please install bower first then run "bower install".
 
-* Flèches avant/après
+## Features
+
+* Next/Prev arrows
 * Play/Pause
 * Hover=pause
-* Description des images
-* La desc. ne s'affiche pas si pas définie
-* Clavier &larr; &rarr;
-* Objets littéraux
-* Points de navigation
-* Images rognées
-* Responsive (3 paliers de taille : < 640px, > 1200px, entre les deux)
-* Animations sur les descriptions
-* Chargement AJAX
+* Image description
+* Description box is hidden if no description is set
+* Keyboard &larr; &rarr;
+* Uses Litteral objects for the slides
+* Navigation dots
+* Image cropping
+* Responsive (3 breakpoiunts : < 640px, > 1200px, between the two)
+* Animations
+* Slides loaded via
 * Fullscreen toggle
